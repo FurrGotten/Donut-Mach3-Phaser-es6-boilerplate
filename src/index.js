@@ -1,9 +1,9 @@
 import * as WebFont from 'webfontloader';
 
-import mainMenuState from 'states/mainMenuState.js';
-import gamePlatformState from 'states/gamePlatformState.js';
-import endGameStateWin from 'states/endGameStateWin.js';
-import endGameStateLose from 'states/endGameStateLose.js';
+import MainMenuState from 'states/mainMenuState.js';
+import GamePlatformState from 'states/gamePlatformState.js';
+import EndGameStateWin from 'states/endGameStateWin.js';
+import EndGameStateLose from 'states/endGameStateLose.js';
 class Game extends Phaser.Game {
 
 	constructor() {
@@ -13,11 +13,11 @@ class Game extends Phaser.Game {
 				families: ['Fredoka One']
 			}
 		});
-		this.state.add('mainMenuState', mainMenuState, false);
-		this.state.add('gamePlatformState', gamePlatformState, false);
-		this.state.add('endGameStateWin', endGameStateWin, false);
-		this.state.add('endGameStateLose', endGameStateLose, false);
-		this.state.start('mainMenuState');
+		this.state.add('MainMenuState', MainMenuState, false);
+		this.state.add('GamePlatformState', GamePlatformState, false);
+		this.state.add('EndGameStateWin', EndGameStateWin, false);
+		this.state.add('EndGameStateLose', EndGameStateLose, false);
+		this.state.start('MainMenuState');
 	}
 
 }

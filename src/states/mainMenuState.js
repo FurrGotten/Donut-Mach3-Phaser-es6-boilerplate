@@ -1,7 +1,7 @@
-import {centerX, centerY, changeState} from "./common"
+import {centerX, centerY} from "./common"
 
 
-class mainMenuState extends Phaser.State {
+class MainMenuState extends Phaser.State {
 	preload() {
 		this.load.image('background', 'assets/images/backgrounds/background.jpg');
 		this.load.image('bigDonut', 'assets/images/donut.png');
@@ -19,8 +19,9 @@ class mainMenuState extends Phaser.State {
 		bigDonut.anchor.setTo(0.5, 0.5);
 		let logo = this.add.sprite(centerX, centerY - 150, 'logo');
 		logo.anchor.setTo(0.5, 0.5);
-		let playButton = this.add.button(centerX, centerY + 175, 'playButton', () => {
-			changeState.call(this, null, 'gamePlatformState')});
+		const playButton = this.add.button(centerX, centerY + 170, 'playButton', () => {
+			this.state.start('GamePlatformState', true, false, { score: 200 });
+		});
 		playButton.anchor.setTo(0.5, 0.5);
 		playButton.onInputDown.add(this.tint, playButton);
 		playButton.onInputUp.add(this.unTint, playButton);
@@ -35,4 +36,4 @@ class mainMenuState extends Phaser.State {
 	}
 }
 
-export default mainMenuState;
+export default MainMenuState;
