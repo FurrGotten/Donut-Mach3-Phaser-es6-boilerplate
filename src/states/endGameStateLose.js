@@ -1,4 +1,4 @@
-import {centerX, centerY} from "./common";
+
 
 
 class EndGameStateLose extends Phaser.State {
@@ -8,6 +8,7 @@ class EndGameStateLose extends Phaser.State {
 		this.load.image('playButton','assets/images/btn-play.png');
 	}
 	create() {
+		const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#bbb980';
 		let backgroundImage = this.add.sprite(0, 200, 'background');
 		backgroundImage.height = 1100;

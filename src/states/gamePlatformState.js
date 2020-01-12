@@ -1,14 +1,16 @@
-import {centerX, centerY} from "./common";
+
 
 const FIELD_COLUMNS = 13;
 const FIELD_ROWS = 11;
 const DONUT_SIZE = 100;
 
-const LOSE_TIME = 30;
-let timeText;
+const LOSE_TIME = 300;
+let timeCounter;
 
 let music;
 let musicState = 'on';
+
+let selDonutIndex = null;
 
 class GamePlatformState extends Phaser.State {
     preload() {
@@ -32,6 +34,7 @@ class GamePlatformState extends Phaser.State {
     }
 
     create() {
+        const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#fffcad';
         let backgroundImage = this.add.sprite(0, 200, 'background');
         backgroundImage.height = 1100;
@@ -39,7 +42,13 @@ class GamePlatformState extends Phaser.State {
         scoreTable.anchor.setTo(0.5, 0);
 
         const donuts = this.add.group();
-        this.generateField(donuts, ['donut-01', 'donut-02', 'donut-04', 'donut-05', 'donut-06']);
+        generateField(donuts, ['donut-01', 'donut-02', 'donut-04', 'donut-05', 'donut-06']);
+        donuts.align(FIELD_COLUMNS, -1, DONUT_SIZE, DONUT_SIZE);
+        donuts.x = centerX - (DONUT_SIZE * FIELD_COLUMNS) / 2;
+        donuts.y = centerY + 100 - (DONUT_SIZE * FIELD_ROWS) / 2;
+        donuts.setAll('inputEnabled', true);
+        donuts.setAll('input.useHandCursor', true);
+        donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler);
 
         music = this.add.audio('soundTrack');
         music.loop = true;
@@ -61,7 +70,9 @@ class GamePlatformState extends Phaser.State {
             music.destroy();
             this.cache.removeSound('soundTrack');
         }, this);
-
+        timeCounter = LOSE_TIME;
+        const timeText = this.add.text(centerX + 100, 100, `00:${timeCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
+        this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
     }
 
     update() {
@@ -72,26 +83,44 @@ class GamePlatformState extends Phaser.State {
 
     }
 
-    generateField(donutsGroup, donutTypes) {
-        for (let i = 0; i < FIELD_ROWS; i++) {
-            for (let j = 0; j < FIELD_COLUMNS; j++) {
-                const randomIndex = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
-                donutsGroup.create(0, 0, randomIndex);
+    clickHandler(item) {
+        const curDonutIndex = item.parent.getChildIndex(item);
+        if (!selDonutIndex){
+            // виділяємо елемент, якщо ще не виділенний
+            item.height = 120;
+            item.width = 120;
+            item.x -= 10;
+            item.y -= 10;
+            selDonutIndex = curDonutIndex;
+        } else if (curDonutIndex === selDonutIndex){
+            // знімаємо виділення, якщо клікаємо по вже виділеному елементу
+            item.height = 100;
+            item.width = 100;
+            item.x += 10;
+            item.y += 10;
+            selDonutIndex = null;
+        } else {
+            // перевіряємо чи можна зробити перестановку та робимо її
+            const donutKeys = item.parent.children.map(sprite => sprite.key);
+            const removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
+            if(!removableIndexes.length){
+                // перестановка неможлива або елементи не сусідні, або після перестановки немає що видаляти
+                // то ж знімаємо виділення з поточного виділеного елементу
+                const selDonut = item.parent.getChildAt(selDonutIndex);
+                selDonut.height = 100;
+                selDonut.width = 100;
+                selDonut.x += 10;
+                selDonut.y += 10;
+                selDonutIndex = null;
+            } else {
+                const removableElements = removableIndexes.map(i => item.parent.getChildAt(i));
+                this.removeElements(removableElements);
             }
         }
-        donutsGroup.align(FIELD_COLUMNS, -1, DONUT_SIZE, DONUT_SIZE);
-        donutsGroup.x = centerX - (DONUT_SIZE * FIELD_COLUMNS) / 2;
-        donutsGroup.y = centerY + 180 - (DONUT_SIZE * FIELD_ROWS) / 2;
-        donutsGroup.setAll('inputEnabled', true);
-        donutsGroup.setAll('input.useHandCursor', true);
-        donutsGroup.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler)
     }
 
-    clickHandler(item) {
-        console.log('item', item)
-        item.height = 110;
-        item.width = 110;
-        console.log('item', item, item.parent.getChildIndex(item))
+    removeElements(removable){
+
     }
 
     tint() {
@@ -102,6 +131,10 @@ class GamePlatformState extends Phaser.State {
     unTint() {
         this.tint = 0xFFFFFF;
         // sound.play('');
+    }
+    updateTimeCounter(timeText) {
+        timeCounter--;
+        timeText.setText(`00:${timeCounter}`)
     }
 }
 
@@ -121,4 +154,60 @@ function removeDuplicates(donuts, donutTypes, row, column) {
     }
     return filtered;
 }
+// заповнюємо ігрове поле, слідкуючі, що ніякі 3 або більше однакових елемента не генерувалися підряд
+// donutTypes містить масив тих елементів, які можна розмістити на полі
+function generateField(donutsGroup, donutTypes) {
+    for (let i = 0; i < FIELD_ROWS; i++) {
+        for (let j = 0; j < FIELD_COLUMNS; j++) {
+            const randomKey = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
+            donutsGroup.create(0, 0, randomKey);
+        }
+    }
+}
+
+// знайти індекси всіх елементів які можна видалити
+// на поточному полі або на полі яке виникає якщо переставити місцями елементи swapA i swapB
+function getRemovableDonuts(donuts, swapA, swapB) {
+    // створюємо копію ігрового поля щоб провести перевірку перед перстановкою swapA i swapB
+    const donutsCopy = [...donuts];
+    if (swapA && swapB){
+        // перевірка чи є елементи сусідніми для перестановки, якщо ні,
+        // то перестановка неможлива і повертається порожній массив
+        const diff = Math.abs(swapA - swapB);
+        if (diff !== 1 || diff !== FIELD_COLUMNS){
+            return [];
+        }
+        const t = donutsCopy[swapA];
+        donutsCopy[swapA] = donutsCopy[swapB];
+        donutsCopy[swapB] = t;
+    }
+    // допоможній массив з нулів і одиниць, одиниці ставимо для елементів, які можна видалити
+    const removeList = new Array(donuts.length).fill(0);
+    for (let i = 0; i < FIELD_ROWS; i++) {
+        for (let j = 0; j < FIELD_COLUMNS; j++) {
+            const curIndex = i * FIELD_COLUMNS + j;
+            // перевірка трьох сусідніх елементів по горизонталі
+            if (j > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - 1] && donutsCopy[curIndex] === donutsCopy[curIndex - 2]){
+                removeList[curIndex] = 1;
+                removeList[curIndex - 1] = 1;
+                removeList[curIndex - 2] = 1;
+            }
+            // перевірка трьох сусідніх елементів по вертикалі
+            if (i > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS] && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS*2]){
+                removeList[curIndex] = 1;
+                removeList[curIndex - FIELD_COLUMNS] = 1;
+                removeList[curIndex - FIELD_COLUMNS * 2] = 1;
+            }
+        }
+    }
+    // перетворюємо масив з одиниць і нулів в массив індексів потрібних нам елементів
+    const retValue = [];
+    removeList.forEach((v, i) => {
+        if (v){
+            retValue.push(i);
+        }
+    });
+    return retValue;
+}
+
 export default GamePlatformState;

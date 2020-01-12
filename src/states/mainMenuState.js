@@ -1,4 +1,4 @@
-import {centerX, centerY} from "./common"
+
 
 
 class MainMenuState extends Phaser.State {
@@ -11,6 +11,7 @@ class MainMenuState extends Phaser.State {
 		this.load.image('soundControlButton','assets/images/btn-sfx.png');
 	}
 	create() {
+		const { centerX, centerY } = this.world;
 		this.stage.backgroundColor = '#fffcad';
 		let backgroundImage = this.add.sprite(0, 200, 'background');
 		backgroundImage.height = 1100;
