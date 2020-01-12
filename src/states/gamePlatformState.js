@@ -112,8 +112,14 @@ class GamePlatformState extends Phaser.State {
                 selDonut.x += 10;
                 selDonut.y += 10;
                 selDonutIndex = null;
+            } else {
+                this.removeElements(removable);
             }
         }
+    }
+
+    removeElements(removable){
+        
     }
 
     tint() {
