@@ -97,6 +97,9 @@ class GamePlatformState extends Phaser.State {
             item.width = 100;
             item.x += 10;
             item.y += 10;
+        } else {
+            const donutKeys = item.parent.children.map(sprite => sprite.key);
+            const removable = getRemovableDonuts(donutKeys, selectedDonut, currentDonut);
         }
     }
 
@@ -131,12 +134,46 @@ function removeDuplicates(donuts, donutTypes, row, column) {
     }
     return filtered;
 }
+
 function generateField(donutsGroup, donutTypes) {
     for (let i = 0; i < FIELD_ROWS; i++) {
         for (let j = 0; j < FIELD_COLUMNS; j++) {
-            const randomIndex = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
-            donutsGroup.create(0, 0, randomIndex);
+            const randomKey = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
+            donutsGroup.create(0, 0, randomKey);
         }
     }
 }
+
+function getRemovableDonuts(donuts, swapA, swapB) {
+    const donutsCopy = [...donuts];
+    if (swapA && swapB){
+        const t = donutsCopy[swapA];
+        donutsCopy[swapA] = donutsCopy[swapB];
+        donutsCopy[swapB] = t;
+    }
+    const removeList = new Array(donuts.length).fill(0);
+    for (let i = 0; i < FIELD_ROWS; i++) {
+        for (let j = 0; j < FIELD_COLUMNS; j++) {
+            const curIndex = i * FIELD_COLUMNS + j;
+            if (j > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - 1] && donutsCopy[curIndex] === donutsCopy[curIndex - 2]){
+                removeList[curIndex] = 1;
+                removeList[curIndex - 1] = 1;
+                removeList[curIndex - 2] = 1;
+            }
+            if (i > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS] && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS*2]){
+                removeList[curIndex] = 1;
+                removeList[curIndex - FIELD_COLUMNS] = 1;
+                removeList[curIndex - FIELD_COLUMNS * 2] = 1;
+            }
+        }
+    }
+    const retValue = [];
+    removeList.forEach((v, i) => {
+        if (v){
+            retValue.push(i);
+        }
+    });
+    return retValue;
+}
+
 export default GamePlatformState;
