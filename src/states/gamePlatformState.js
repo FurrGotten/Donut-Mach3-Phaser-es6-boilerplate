@@ -1,11 +1,11 @@
-import {centerX, centerY} from "./common";
+
 
 const FIELD_COLUMNS = 13;
 const FIELD_ROWS = 11;
 const DONUT_SIZE = 100;
 
 const LOSE_TIME = 30;
-let timeText;
+let timeCounter;
 
 let music;
 let musicState = 'on';
@@ -32,6 +32,7 @@ class GamePlatformState extends Phaser.State {
     }
 
     create() {
+        const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#fffcad';
         let backgroundImage = this.add.sprite(0, 200, 'background');
         backgroundImage.height = 1100;
@@ -39,7 +40,13 @@ class GamePlatformState extends Phaser.State {
         scoreTable.anchor.setTo(0.5, 0);
 
         const donuts = this.add.group();
-        this.generateField(donuts, ['donut-01', 'donut-02', 'donut-04', 'donut-05', 'donut-06']);
+        generateField(donuts, ['donut-01', 'donut-02', 'donut-04', 'donut-05', 'donut-06']);
+        donuts.align(FIELD_COLUMNS, -1, DONUT_SIZE, DONUT_SIZE);
+        donuts.x = centerX - (DONUT_SIZE * FIELD_COLUMNS) / 2;
+        donuts.y = centerY + 100 - (DONUT_SIZE * FIELD_ROWS) / 2;
+        donuts.setAll('inputEnabled', true);
+        donuts.setAll('input.useHandCursor', true);
+        donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler);
 
         music = this.add.audio('soundTrack');
         music.loop = true;
@@ -61,7 +68,9 @@ class GamePlatformState extends Phaser.State {
             music.destroy();
             this.cache.removeSound('soundTrack');
         }, this);
-
+        timeCounter = LOSE_TIME;
+        const timeText = this.add.text(centerX + 100, 100, `00:${timeCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
+        this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
     }
 
     update() {
@@ -72,23 +81,9 @@ class GamePlatformState extends Phaser.State {
 
     }
 
-    generateField(donutsGroup, donutTypes) {
-        for (let i = 0; i < FIELD_ROWS; i++) {
-            for (let j = 0; j < FIELD_COLUMNS; j++) {
-                const randomIndex = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
-                donutsGroup.create(0, 0, randomIndex);
-            }
-        }
-        donutsGroup.align(FIELD_COLUMNS, -1, DONUT_SIZE, DONUT_SIZE);
-        donutsGroup.x = centerX - (DONUT_SIZE * FIELD_COLUMNS) / 2;
-        donutsGroup.y = centerY + 180 - (DONUT_SIZE * FIELD_ROWS) / 2;
-        donutsGroup.setAll('inputEnabled', true);
-        donutsGroup.setAll('input.useHandCursor', true);
-        donutsGroup.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler)
-    }
 
     clickHandler(item) {
-        console.log('item', item)
+        console.log('item', item);
         item.height = 110;
         item.width = 110;
         console.log('item', item, item.parent.getChildIndex(item))
@@ -102,6 +97,10 @@ class GamePlatformState extends Phaser.State {
     unTint() {
         this.tint = 0xFFFFFF;
         // sound.play('');
+    }
+    updateTimeCounter(timeText) {
+        timeCounter--;
+        timeText.setText(`00:${timeCounter}`)
     }
 }
 
@@ -120,5 +119,13 @@ function removeDuplicates(donuts, donutTypes, row, column) {
         if (upperKey === upperUpperKey) filtered = filtered.filter(index => index !== upperKey);
     }
     return filtered;
+}
+function generateField(donutsGroup, donutTypes) {
+    for (let i = 0; i < FIELD_ROWS; i++) {
+        for (let j = 0; j < FIELD_COLUMNS; j++) {
+            const randomIndex = Phaser.ArrayUtils.getRandomItem(removeDuplicates(donutsGroup.children, donutTypes, i, j));
+            donutsGroup.create(0, 0, randomIndex);
+        }
+    }
 }
 export default GamePlatformState;
