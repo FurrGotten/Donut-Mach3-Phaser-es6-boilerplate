@@ -4,11 +4,13 @@ const FIELD_COLUMNS = 13;
 const FIELD_ROWS = 11;
 const DONUT_SIZE = 100;
 
-const LOSE_TIME = 30;
+const LOSE_TIME = 300;
 let timeCounter;
 
 let music;
 let musicState = 'on';
+
+let selectedDonut = null;
 
 class GamePlatformState extends Phaser.State {
     preload() {
@@ -81,12 +83,21 @@ class GamePlatformState extends Phaser.State {
 
     }
 
-
     clickHandler(item) {
-        console.log('item', item);
-        item.height = 110;
-        item.width = 110;
-        console.log('item', item, item.parent.getChildIndex(item))
+        const currentDonut = item.parent.getChildIndex(item);
+        if (!selectedDonut){
+            selectedDonut = currentDonut;
+            item.height = 120;
+            item.width = 120;
+            item.x -= 10;
+            item.y -= 10;
+        } else if (currentDonut === selectedDonut){
+            selectedDonut = null;
+            item.height = 100;
+            item.width = 100;
+            item.x += 10;
+            item.y += 10;
+        }
     }
 
     tint() {
