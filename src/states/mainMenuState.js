@@ -12,7 +12,8 @@ class MainMenuState extends Phaser.State {
 	}
 	create() {
 		this.stage.backgroundColor = '#fffcad';
-		let backgroundImage = this.add.sprite(0, 190, 'background');
+		let backgroundImage = this.add.sprite(0, 200, 'background');
+		backgroundImage.height = 1100;
 		let bigDonutShadow = this.add.sprite( centerX, centerY, 'bigShadow');
 		bigDonutShadow.anchor.setTo(0.5, 0.5);
 		let bigDonut = this.add.sprite(centerX, centerY, 'bigDonut');
