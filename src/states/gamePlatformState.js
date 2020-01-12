@@ -102,8 +102,8 @@ class GamePlatformState extends Phaser.State {
         } else {
             // перевіряємо чи можна зробити перестановку та робимо її
             const donutKeys = item.parent.children.map(sprite => sprite.key);
-            const removable = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
-            if(!removable.length){
+            const removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
+            if(!removableIndexes.length){
                 // перестановка неможлива або елементи не сусідні, або після перестановки немає що видаляти
                 // то ж знімаємо виділення з поточного виділеного елементу
                 const selDonut = item.parent.getChildAt(selDonutIndex);
@@ -113,13 +113,14 @@ class GamePlatformState extends Phaser.State {
                 selDonut.y += 10;
                 selDonutIndex = null;
             } else {
-                this.removeElements(removable);
+                const removableElements = removableIndexes.map(i => item.parent.getChildAt(i));
+                this.removeElements(removableElements);
             }
         }
     }
 
     removeElements(removable){
-        
+
     }
 
     tint() {
