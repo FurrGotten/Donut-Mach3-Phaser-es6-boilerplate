@@ -10,7 +10,7 @@ let timeCounter;
 let music;
 let musicState = 'on';
 
-let selectedDonut = null;
+let selDonutIndex = null;
 
 class GamePlatformState extends Phaser.State {
     preload() {
@@ -84,22 +84,30 @@ class GamePlatformState extends Phaser.State {
     }
 
     clickHandler(item) {
-        const currentDonut = item.parent.getChildIndex(item);
-        if (!selectedDonut){
-            selectedDonut = currentDonut;
+        const curDonutIndex = item.parent.getChildIndex(item);
+        if (!selDonutIndex){
             item.height = 120;
             item.width = 120;
             item.x -= 10;
             item.y -= 10;
-        } else if (currentDonut === selectedDonut){
-            selectedDonut = null;
+            selDonutIndex = curDonutIndex;
+        } else if (curDonutIndex === selDonutIndex){
             item.height = 100;
             item.width = 100;
             item.x += 10;
             item.y += 10;
+            selDonutIndex = null;
         } else {
             const donutKeys = item.parent.children.map(sprite => sprite.key);
-            const removable = getRemovableDonuts(donutKeys, selectedDonut, currentDonut);
+            const removable = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
+            if(!removable.length){
+                const selDonut = item.parent.getChildAt(selDonutIndex);
+                selDonut.height = 100;
+                selDonut.width = 100;
+                selDonut.x += 10;
+                selDonut.y += 10;
+                selDonutIndex = null;
+            }
         }
     }
 
