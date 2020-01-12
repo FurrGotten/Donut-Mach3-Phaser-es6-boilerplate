@@ -1,6 +1,6 @@
 
 
-class endGameStateWin extends Phaser.State {
+class EndGameStateWin extends Phaser.State {
 	preload() {
 		this.load.image('background', 'assets/images/backgrounds/background.jpg');
 	}
@@ -10,4 +10,4 @@ class endGameStateWin extends Phaser.State {
 	}
 }
 
-export default endGameStateWin;
+export default EndGameStateWin;

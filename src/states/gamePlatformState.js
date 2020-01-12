@@ -1,7 +1,7 @@
-import {centerX, centerY, changeState} from "./common";
+import {centerX, centerY} from "./common";
 
 
-class gamePlatformState extends Phaser.State {
+class GamePlatformState extends Phaser.State {
     preload() {
         this.load.image('background', 'assets/images/backgrounds/background.jpg');
         this.load.image('scoreTable', 'assets/images/bg-score.png');
@@ -32,6 +32,6 @@ class gamePlatformState extends Phaser.State {
     }
 }
 function lose() {
-    changeState.call(this, null, 'endGameStateLose');
+    this.state.start('EndGameStateLose');
 }
-export default gamePlatformState;
+export default GamePlatformState;
