@@ -86,21 +86,26 @@ class GamePlatformState extends Phaser.State {
     clickHandler(item) {
         const curDonutIndex = item.parent.getChildIndex(item);
         if (!selDonutIndex){
+            // виділяємо елемент, якщо ще не виділенний
             item.height = 120;
             item.width = 120;
             item.x -= 10;
             item.y -= 10;
             selDonutIndex = curDonutIndex;
         } else if (curDonutIndex === selDonutIndex){
+            // знімаємо виділення, якщо клікаємо по вже виділеному елементу
             item.height = 100;
             item.width = 100;
             item.x += 10;
             item.y += 10;
             selDonutIndex = null;
         } else {
+            // перевіряємо чи можна зробити перестановку та робимо її
             const donutKeys = item.parent.children.map(sprite => sprite.key);
             const removable = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
             if(!removable.length){
+                // перестановка неможлива або елементи не сусідні, або після перестановки немає що видаляти
+                // то ж знімаємо виділення з поточного виділеного елементу
                 const selDonut = item.parent.getChildAt(selDonutIndex);
                 selDonut.height = 100;
                 selDonut.width = 100;
@@ -142,7 +147,8 @@ function removeDuplicates(donuts, donutTypes, row, column) {
     }
     return filtered;
 }
-
+// заповнюємо ігрове поле, слідкуючі, що ніякі 3 або більше однакових елемента не генерувалися підряд
+// donutTypes містить масив тих елементів, які можна розмістити на полі
 function generateField(donutsGroup, donutTypes) {
     for (let i = 0; i < FIELD_ROWS; i++) {
         for (let j = 0; j < FIELD_COLUMNS; j++) {
@@ -152,22 +158,34 @@ function generateField(donutsGroup, donutTypes) {
     }
 }
 
+// знайти індекси всіх елементів які можна видалити
+// на поточному полі або на полі яке виникає якщо переставити місцями елементи swapA i swapB
 function getRemovableDonuts(donuts, swapA, swapB) {
+    // створюємо копію ігрового поля щоб провести перевірку перед перстановкою swapA i swapB
     const donutsCopy = [...donuts];
     if (swapA && swapB){
+        // перевірка чи є елементи сусідніми для перестановки, якщо ні,
+        // то перестановка неможлива і повертається порожній массив
+        const diff = Math.abs(swapA - swapB);
+        if (diff !== 1 || diff !== FIELD_COLUMNS){
+            return [];
+        }
         const t = donutsCopy[swapA];
         donutsCopy[swapA] = donutsCopy[swapB];
         donutsCopy[swapB] = t;
     }
+    // допоможній массив з нулів і одиниць, одиниці ставимо для елементів, які можна видалити
     const removeList = new Array(donuts.length).fill(0);
     for (let i = 0; i < FIELD_ROWS; i++) {
         for (let j = 0; j < FIELD_COLUMNS; j++) {
             const curIndex = i * FIELD_COLUMNS + j;
+            // перевірка трьох сусідніх елементів по горизонталі
             if (j > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - 1] && donutsCopy[curIndex] === donutsCopy[curIndex - 2]){
                 removeList[curIndex] = 1;
                 removeList[curIndex - 1] = 1;
                 removeList[curIndex - 2] = 1;
             }
+            // перевірка трьох сусідніх елементів по вертикалі
             if (i > 1 && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS] && donutsCopy[curIndex] === donutsCopy[curIndex - FIELD_COLUMNS*2]){
                 removeList[curIndex] = 1;
                 removeList[curIndex - FIELD_COLUMNS] = 1;
@@ -175,6 +193,7 @@ function getRemovableDonuts(donuts, swapA, swapB) {
             }
         }
     }
+    // перетворюємо масив з одиниць і нулів в массив індексів потрібних нам елементів
     const retValue = [];
     removeList.forEach((v, i) => {
         if (v){
