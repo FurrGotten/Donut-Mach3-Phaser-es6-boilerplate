@@ -1,5 +1,5 @@
-const FIELD_COLUMNS = 13;
-const FIELD_ROWS = 11;
+const FIELD_COLUMNS = 10;
+const FIELD_ROWS = 8;
 const DONUT_SIZE = 100;
 const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
@@ -55,7 +55,7 @@ class GamePlatformState extends Phaser.State {
     create() {
         const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#fffcad';
-        let backgroundImage = this.add.sprite(0, 200, 'background');
+        let backgroundImage = this.add.sprite(0, 0, 'background');
         backgroundImage.height = 1100;
         let scoreTable = this.add.sprite(centerX - 200, 10, 'scoreTable');
         scoreTable.anchor.setTo(0.5, 0);
@@ -73,7 +73,7 @@ class GamePlatformState extends Phaser.State {
         backgroundMusic.loop = true;
         backgroundMusic.play();
 
-        const mute = this.add.button(1100, 50, 'mute', () => {
+        const mute = this.add.button(900, 50, 'mute', () => {
             if (backgroundMusicState === 'on') {
                 backgroundMusic.stop();
                 backgroundMusicState = 'off';

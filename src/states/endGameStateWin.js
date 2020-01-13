@@ -7,8 +7,8 @@ class EndGameStateWin extends Phaser.State {
 	create() {
 		const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#fffcad';
-		let backgroundImage = this.add.sprite(0, 200, 'background');
-		backgroundImage.height = 1100;
+        let backgroundImage = this.add.sprite(0, 0, 'background');
+        backgroundImage.height = 1100;
 	}
 }
 

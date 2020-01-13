@@ -10,7 +10,7 @@ class EndGameStateLose extends Phaser.State {
 	create() {
 		const { centerX, centerY } = this.world;
         this.stage.backgroundColor = '#bbb980';
-		let backgroundImage = this.add.sprite(0, 200, 'background');
+		let backgroundImage = this.add.sprite(0, 0, 'background');
 		backgroundImage.height = 1100;
 		let loseText = this.add.sprite(centerX, centerY, 'loseText');
 		loseText.anchor.setTo(0.5, 0.5);
