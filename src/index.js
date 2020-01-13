@@ -7,7 +7,7 @@ import EndGameStateLose from 'states/endGameStateLose.js';
 class Game extends Phaser.Game {
 
 	constructor() {
-		super(1280, 1300, Phaser.AUTO, 'content', null);
+		super(1090, 1100, Phaser.AUTO, 'content', null);
 		WebFont.load({
 			google: {
 				families: ['Fredoka One']
