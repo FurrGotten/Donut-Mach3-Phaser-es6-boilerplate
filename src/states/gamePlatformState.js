@@ -11,6 +11,7 @@ let backgroundMusic;
 let backgroundMusicState = 'on';
 let missSound;
 let killSound;
+let score;
 
 let emitter;
 const PARTICLES = ['particle-1', 'particle-2','particle-3'];
@@ -59,6 +60,8 @@ class GamePlatformState extends Phaser.State {
         backgroundImage.height = 1100;
         let scoreTable = this.add.sprite(centerX - 200, 10, 'scoreTable');
         scoreTable.anchor.setTo(0.5, 0);
+        score = 0;
+        const scoreText = this.add.text(centerX - 190, 70, `0`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
 
         const donuts = this.add.group();
         generateField(donuts, ALLOWED_DONUT_TYPES);
@@ -67,7 +70,7 @@ class GamePlatformState extends Phaser.State {
         donuts.y = centerY + 100 - (DONUT_SIZE * FIELD_ROWS) / 2;
         donuts.setAll('inputEnabled', true);
         donuts.setAll('input.useHandCursor', true);
-        donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler, this);
+        donuts.callAll('events.onInputDown.add', 'events.onInputDown', item => {this.clickHandler(item, scoreText)}, this);
 
         backgroundMusic = this.add.audio('soundTrack');
         backgroundMusic.loop = true;
@@ -94,7 +97,6 @@ class GamePlatformState extends Phaser.State {
         minuteCounter = Math.floor(rawSecondsCounter / 60);
         const timeText = this.add.text(centerX + 100, 100, `${minuteCounter}:${secondsCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
         this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
-
     }
 
     update() {
@@ -105,7 +107,7 @@ class GamePlatformState extends Phaser.State {
 
     }
 
-    clickHandler(curDonut) {
+    clickHandler(curDonut, scoreText) {
         const curDonutIndex = curDonut.parent.getChildIndex(curDonut);
         if (!selDonutIndex){
             // виділяємо елемент, якщо ще не виділенний
@@ -147,6 +149,8 @@ class GamePlatformState extends Phaser.State {
                     // для анімації потрібні самі елементи за вказаними індексами
                     const removableElements = removableIndexes.map(i => curDonut.parent.getChildAt(i));
                     this.animateRemoval(removableElements, iter);
+                    score += (iter * removableIndexes.length);
+                    scoreText.setText(`${score}`);
                     // замінити текстури в видалених елементів на нові рандомні
                     removableElements.forEach(el => el.loadTexture(Phaser.ArrayUtils.getRandomItem(ALLOWED_DONUT_TYPES)));
                     // перевірити чи можливе ще видалення після додання нових
@@ -161,7 +165,6 @@ class GamePlatformState extends Phaser.State {
     }
 
     animateRemoval(elements, iter){
-        // @TODO анімація видалення за допомогю particles
         // програвати на кожній ітерації вищий звук
         killSound = this.add.audio(`select-${iter}`);
         killSound.volume = 0.5;
