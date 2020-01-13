@@ -3,6 +3,7 @@
 const FIELD_COLUMNS = 13;
 const FIELD_ROWS = 11;
 const DONUT_SIZE = 100;
+const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
 const LOSE_TIME = 300;
 let timeCounter;
@@ -42,13 +43,13 @@ class GamePlatformState extends Phaser.State {
         scoreTable.anchor.setTo(0.5, 0);
 
         const donuts = this.add.group();
-        generateField(donuts, ['donut-01', 'donut-02', 'donut-04', 'donut-05', 'donut-06']);
+        generateField(donuts, ALLOWED_DONUT_TYPES);
         donuts.align(FIELD_COLUMNS, -1, DONUT_SIZE, DONUT_SIZE);
         donuts.x = centerX - (DONUT_SIZE * FIELD_COLUMNS) / 2;
         donuts.y = centerY + 100 - (DONUT_SIZE * FIELD_ROWS) / 2;
         donuts.setAll('inputEnabled', true);
         donuts.setAll('input.useHandCursor', true);
-        donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler);
+        donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler, this);
 
         music = this.add.audio('soundTrack');
         music.loop = true;
@@ -83,44 +84,63 @@ class GamePlatformState extends Phaser.State {
 
     }
 
-    clickHandler(item) {
-        const curDonutIndex = item.parent.getChildIndex(item);
+    clickHandler(curDonut) {
+        const curDonutIndex = curDonut.parent.getChildIndex(curDonut);
         if (!selDonutIndex){
             // виділяємо елемент, якщо ще не виділенний
-            item.height = 120;
-            item.width = 120;
-            item.x -= 10;
-            item.y -= 10;
+            curDonut.height = 120;
+            curDonut.width = 120;
+            curDonut.x -= 10;
+            curDonut.y -= 10;
             selDonutIndex = curDonutIndex;
         } else if (curDonutIndex === selDonutIndex){
             // знімаємо виділення, якщо клікаємо по вже виділеному елементу
-            item.height = 100;
-            item.width = 100;
-            item.x += 10;
-            item.y += 10;
+            curDonut.height = 100;
+            curDonut.width = 100;
+            curDonut.x += 10;
+            curDonut.y += 10;
             selDonutIndex = null;
         } else {
+            // у будь-якому випадку знімаємо виділення з поточного виділеного елементу
+            const selDonut = curDonut.parent.getChildAt(selDonutIndex);
+            selDonut.height = 100;
+            selDonut.width = 100;
+            selDonut.x += 10;
+            selDonut.y += 10;
+
             // перевіряємо чи можна зробити перестановку та робимо її
-            const donutKeys = item.parent.children.map(sprite => sprite.key);
-            const removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
+            let donutKeys = curDonut.parent.children.map(sprite => sprite.key);
+            let removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
             if(!removableIndexes.length){
-                // перестановка неможлива або елементи не сусідні, або після перестановки немає що видаляти
-                // то ж знімаємо виділення з поточного виділеного елементу
-                const selDonut = item.parent.getChildAt(selDonutIndex);
-                selDonut.height = 100;
-                selDonut.width = 100;
-                selDonut.x += 10;
-                selDonut.y += 10;
-                selDonutIndex = null;
+                // перестановка неможлива або елементи не сусідні, відтворюємо відповідний звук
+                // @TODO програвати звук "операція неможлива"
             } else {
-                const removableElements = removableIndexes.map(i => item.parent.getChildAt(i));
-                this.removeElements(removableElements);
+                // перестановка можлива, міняємо елементи місцями
+                const t = selDonut.key;
+                selDonut.loadTexture(curDonut.key);
+                curDonut.loadTexture(t);
+                // повторюємо поки є можливість видаляти елементи
+                let iter = 1;
+                while (removableIndexes.length) {
+                    // для анімації потрібні самі елементи за вказаними індексами
+                    const removableElements = removableIndexes.map(i => curDonut.parent.getChildAt(i));
+                    this.animateRemoval(removableElements, iter);
+                    // замінити текстури в видалених елементів на нові рандомні
+                    removableElements.forEach(el => el.loadTexture(Phaser.ArrayUtils.getRandomItem(ALLOWED_DONUT_TYPES)));
+                    // перевірити чи можливе ще видалення після додання нових
+                    donutKeys = curDonut.parent.children.map(sprite => sprite.key);
+                    removableIndexes = getRemovableDonuts(donutKeys);
+                    // маємо лише 9 звуків для кожної ітерації
+                    if (iter<= 9) iter++;
+                }
             }
+            selDonutIndex = null;
         }
     }
 
-    removeElements(removable){
-
+    animateRemoval(elements, iter){
+        // @TODO анімація видалення за допомогю particles
+        // програвати на кожній ітерації вищий звук
     }
 
     tint() {
@@ -174,7 +194,7 @@ function getRemovableDonuts(donuts, swapA, swapB) {
         // перевірка чи є елементи сусідніми для перестановки, якщо ні,
         // то перестановка неможлива і повертається порожній массив
         const diff = Math.abs(swapA - swapB);
-        if (diff !== 1 || diff !== FIELD_COLUMNS){
+        if (diff !== 1 && diff !== FIELD_COLUMNS){
             return [];
         }
         const t = donutsCopy[swapA];
