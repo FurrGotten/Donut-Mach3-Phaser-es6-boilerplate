@@ -15,18 +15,25 @@ class MainMenuState extends Phaser.State {
 		this.stage.backgroundColor = '#fffcad';
 		let backgroundImage = this.add.sprite(0, 0, 'background');
 		backgroundImage.height = 1100;
+
 		let bigDonutShadow = this.add.sprite( centerX, centerY, 'bigShadow');
 		bigDonutShadow.anchor.setTo(0.5, 0.5);
 		let bigDonut = this.add.sprite(centerX, centerY, 'bigDonut');
 		bigDonut.anchor.setTo(0.5, 0.5);
 		let logo = this.add.sprite(centerX, centerY - 150, 'logo');
 		logo.anchor.setTo(0.5, 0.5);
+
 		const playButton = this.add.button(centerX, centerY + 170, 'playButton', () => {
 			this.state.start('GamePlatformState', true, false, { score: 200 });
 		});
 		playButton.anchor.setTo(0.5, 0.5);
 		playButton.onInputDown.add(this.tint, playButton);
 		playButton.onInputUp.add(this.unTint, playButton);
+
+		const tutorButton = this.add.text(centerX, centerY + 300, 'tutorial', { font: "60px Fredoka One", fill: "#ffffff", align: "center" });
+		tutorButton.anchor.setTo(0.5);
+		tutorButton.inputEnabled = true;
+		tutorButton.events.onInputUp.add(() => {this.state.start('TutorialState')}, this);
 	}
 	tint() {
 		this.tint = 0xbbbbbb;
@@ -37,5 +44,6 @@ class MainMenuState extends Phaser.State {
 		// sound.play('');
 	}
 }
+
 
 export default MainMenuState;
