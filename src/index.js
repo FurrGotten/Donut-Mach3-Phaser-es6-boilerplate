@@ -1,9 +1,9 @@
 import * as WebFont from 'webfontloader';
-
-import MainMenuState from 'states/mainMenuState.js';
-import GamePlatformState from 'states/gamePlatformState.js';
-import EndGameStateWin from 'states/endGameStateWin.js';
-import EndGameStateLose from 'states/endGameStateLose.js';
+import MainMenuState from 'states/MainMenuState.js';
+import GamePlatformState from 'states/GamePlatformState.js';
+import EndGameStateWin from 'states/EndGameStateWin.js';
+import EndGameStateLose from 'states/EndGameStateLose.js';
+import TutorialState from 'states/TutorialState.js';
 class Game extends Phaser.Game {
 
 	constructor() {
@@ -17,6 +17,7 @@ class Game extends Phaser.Game {
 		this.state.add('GamePlatformState', GamePlatformState, false);
 		this.state.add('EndGameStateWin', EndGameStateWin, false);
 		this.state.add('EndGameStateLose', EndGameStateLose, false);
+		this.state.add('TutorialState', TutorialState, false);
 		this.state.start('MainMenuState');
 	}
 
