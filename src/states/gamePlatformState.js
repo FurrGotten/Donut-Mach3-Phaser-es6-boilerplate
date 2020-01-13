@@ -1,15 +1,19 @@
-
-
 const FIELD_COLUMNS = 13;
 const FIELD_ROWS = 11;
 const DONUT_SIZE = 100;
 const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
-const LOSE_TIME = 300;
+const LOSE_TIME = 330;
 let timeCounter;
 
-let music;
-let musicState = 'on';
+
+let backgroundMusic;
+let backgroundMusicState = 'on';
+let missSound;
+let killSound;
+
+let emitter;
+const PARTICLES = ['particle-1', 'particle-2','particle-3'];
 
 let selDonutIndex = null;
 
@@ -31,7 +35,21 @@ class GamePlatformState extends Phaser.State {
         this.load.image('donut-12', 'assets/images/game/gem-12.png');
         this.load.image('hand', 'assets/images/game/hand.png');
         this.load.image('mute', 'assets/images/btn-sfx.png');
-        this.load.audio('soundTrack', 'assets/audio/background.mp3')
+        this.load.audio('soundTrack', 'assets/audio/background.mp3');
+        this.load.audio('missSound', 'assets/audio/miss-sound.mp3');
+        this.load.audio('killSound', 'assets/audio/kill.mp3');
+        this.load.audio('select-1', 'assets/audio/select-1.mp3');
+        this.load.audio('select-2', 'assets/audio/select-2.mp3');
+        this.load.audio('select-3', 'assets/audio/select-3.mp3');
+        this.load.audio('select-4', 'assets/audio/select-4.mp3');
+        this.load.audio('select-5', 'assets/audio/select-5.mp3');
+        this.load.audio('select-6', 'assets/audio/select-6.mp3');
+        this.load.audio('select-7', 'assets/audio/select-7.mp3');
+        this.load.audio('select-8', 'assets/audio/select-8.mp3');
+        this.load.audio('select-9', 'assets/audio/select-9.mp3');
+        this.load.image('particle-1', 'assets/images/particles/particle_ex1.png');
+        this.load.image('particle-2', 'assets/images/particles/particle_ex2.png');
+        this.load.image('particle-3', 'assets/images/particles/particle_ex3.png');
     }
 
     create() {
@@ -51,29 +69,30 @@ class GamePlatformState extends Phaser.State {
         donuts.setAll('input.useHandCursor', true);
         donuts.callAll('events.onInputDown.add', 'events.onInputDown', this.clickHandler, this);
 
-        music = this.add.audio('soundTrack');
-        music.loop = true;
-        music.play();
+        backgroundMusic = this.add.audio('soundTrack');
+        backgroundMusic.loop = true;
+        backgroundMusic.play();
 
         const mute = this.add.button(1100, 50, 'mute', () => {
-            if (musicState === 'on') {
-                music.stop();
-                musicState = 'off';
+            if (backgroundMusicState === 'on') {
+                backgroundMusic.stop();
+                backgroundMusicState = 'off';
             } else {
-                music.play();
-                musicState = 'on'
+                backgroundMusic.play();
+                backgroundMusicState = 'on'
             }
         });
         mute.onInputDown.add(this.tint, mute);
         mute.onInputUp.add(this.unTint, mute);
         this.time.events.add(Phaser.Timer.SECOND * LOSE_TIME, () => {
             this.state.start('EndGameStateLose');
-            music.destroy();
+            backgroundMusic.destroy();
             this.cache.removeSound('soundTrack');
         }, this);
         timeCounter = LOSE_TIME;
         const timeText = this.add.text(centerX + 100, 100, `00:${timeCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
         this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
+
     }
 
     update() {
@@ -113,7 +132,8 @@ class GamePlatformState extends Phaser.State {
             let removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
             if(!removableIndexes.length){
                 // перестановка неможлива або елементи не сусідні, відтворюємо відповідний звук
-                // @TODO програвати звук "операція неможлива"
+                missSound = this.add.audio('missSound');
+                missSound.play();
             } else {
                 // перестановка можлива, міняємо елементи місцями
                 const t = selDonut.key;
@@ -141,7 +161,21 @@ class GamePlatformState extends Phaser.State {
     animateRemoval(elements, iter){
         // @TODO анімація видалення за допомогю particles
         // програвати на кожній ітерації вищий звук
+        killSound = this.add.audio(`select-${iter}`);
+        killSound.volume = 0.5;
+        killSound.play();
+
+        const middleElement = elements[Math.floor(elements.length / 2)];
+
+        emitter = this.add.emitter(50, 50, 100);
+        emitter.makeParticles(PARTICLES);
+        middleElement.addChild(emitter);
+        emitter.minParticleSpeed.setTo(-600, -600);
+        emitter.maxParticleSpeed.setTo(600, 600);
+        emitter.gravity = 0;
+        emitter.start(true, 1000, null, 10);
     }
+
 
     tint() {
         this.tint = 0xbbbbbb;
