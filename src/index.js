@@ -1,9 +1,8 @@
 import * as WebFont from 'webfontloader';
-
-import MainMenuState from 'states/mainMenuState.js';
-import GamePlatformState from 'states/gamePlatformState.js';
-import EndGameStateWin from 'states/endGameStateWin.js';
-import EndGameStateLose from 'states/endGameStateLose.js';
+import MainMenuState from 'states/MainMenuState.js';
+import GamePlatformState from 'states/GamePlatformState.js';
+import EndGameStateWin from 'states/EndGameStateWin.js';
+import EndGameStateLose from 'states/EndGameStateLose.js';
 class Game extends Phaser.Game {
 
 	constructor() {
