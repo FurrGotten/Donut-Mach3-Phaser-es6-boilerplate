@@ -4,6 +4,7 @@ const DONUT_SIZE = 100;
 const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
 const LOSE_TIME = 300;
+const WIN_SCORE = 30;
 
 let backgroundMusic;
 let backgroundMusicState = 'on';
@@ -97,7 +98,6 @@ class GamePlatformState extends Phaser.State {
     }
 
     update() {
-
     }
 
     render() {
@@ -158,6 +158,9 @@ class GamePlatformState extends Phaser.State {
             }
             selDonutIndex = null;
         }
+            if (score >= WIN_SCORE){
+                this.state.start('EndGameStateWin');
+            }
     }
 
     animateRemoval(elements, iter){
