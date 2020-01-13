@@ -15,7 +15,7 @@ let score;
 let emitter;
 const PARTICLES = ['particle-1', 'particle-2','particle-3'];
 
-let selDonutIndex = null;
+let selDonutIndex;
 
 class GamePlatformState extends Phaser.State {
     preload() {
@@ -54,10 +54,11 @@ class GamePlatformState extends Phaser.State {
 
     create() {
         const { centerX, centerY } = this.world;
-        missSound = this.add.audio('missSound');
+
         this.stage.backgroundColor = '#fffcad';
         let backgroundImage = this.add.sprite(0, 0, 'background');
         backgroundImage.height = 1100;
+
         let scoreTable = this.add.sprite(centerX - 200, 10, 'scoreTable');
         scoreTable.anchor.setTo(0.5, 0);
         score = 0;
@@ -72,6 +73,9 @@ class GamePlatformState extends Phaser.State {
         donuts.setAll('input.useHandCursor', true);
         donuts.callAll('events.onInputDown.add', 'events.onInputDown', item => {this.clickHandler(item, scoreText)}, this);
 
+        selDonutIndex = null;
+
+        missSound = this.add.audio('missSound');
         backgroundMusic = this.add.audio('soundTrack');
         backgroundMusic.loop = true;
         backgroundMusic.play();
@@ -87,6 +91,7 @@ class GamePlatformState extends Phaser.State {
         });
         mute.onInputDown.add(this.tint, mute);
         mute.onInputUp.add(this.unTint, mute);
+
         this.time.events.add(Phaser.Timer.SECOND * LOSE_TIME, () => {
             this.state.start('EndGameStateLose');
             backgroundMusic.destroy();
@@ -94,7 +99,10 @@ class GamePlatformState extends Phaser.State {
         }, this);
         let rawSecondsTimer = LOSE_TIME;
         const timeText = this.add.text(centerX + 100, 100, formatTime(rawSecondsTimer), { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
-        this.game.time.events.loop(Phaser.Timer.SECOND, () => {timeText.setText(formatTime(--rawSecondsTimer))}, this);
+        this.game.time.events.loop(Phaser.Timer.SECOND, () => {
+            rawSecondsTimer--;
+            timeText.setText(formatTime(rawSecondsTimer));
+        }, this);
     }
 
     update() {
@@ -106,7 +114,7 @@ class GamePlatformState extends Phaser.State {
 
     clickHandler(curDonut, scoreText) {
         const curDonutIndex = curDonut.parent.getChildIndex(curDonut);
-        if (!selDonutIndex){
+        if (selDonutIndex === null){
             // виділяємо елемент, якщо ще не виділенний
             curDonut.height = 120;
             curDonut.width = 120;
