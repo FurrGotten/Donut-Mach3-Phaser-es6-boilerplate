@@ -3,9 +3,7 @@ const FIELD_ROWS = 8;
 const DONUT_SIZE = 100;
 const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
-const LOSE_TIME = 330;
-let rawSecondsCounter, secondsCounter, minuteCounter;
-
+const LOSE_TIME = 300;
 
 let backgroundMusic;
 let backgroundMusicState = 'on';
@@ -55,6 +53,7 @@ class GamePlatformState extends Phaser.State {
 
     create() {
         const { centerX, centerY } = this.world;
+        missSound = this.add.audio('missSound');
         this.stage.backgroundColor = '#fffcad';
         let backgroundImage = this.add.sprite(0, 0, 'background');
         backgroundImage.height = 1100;
@@ -92,11 +91,9 @@ class GamePlatformState extends Phaser.State {
             backgroundMusic.destroy();
             this.cache.removeSound('soundTrack');
         }, this);
-        rawSecondsCounter = LOSE_TIME;
-        secondsCounter = rawSecondsCounter % 60;
-        minuteCounter = Math.floor(rawSecondsCounter / 60);
-        const timeText = this.add.text(centerX + 100, 100, `${minuteCounter}:${secondsCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
-        this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
+        let rawSecondsTimer = LOSE_TIME;
+        const timeText = this.add.text(centerX + 100, 100, formatTime(rawSecondsTimer), { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
+        this.game.time.events.loop(Phaser.Timer.SECOND, () => {timeText.setText(formatTime(--rawSecondsTimer))}, this);
     }
 
     update() {
@@ -136,7 +133,6 @@ class GamePlatformState extends Phaser.State {
             let removableIndexes = getRemovableDonuts(donutKeys, selDonutIndex, curDonutIndex);
             if(!removableIndexes.length){
                 // перестановка неможлива або елементи не сусідні, відтворюємо відповідний звук
-                missSound = this.add.audio('missSound');
                 missSound.play();
             } else {
                 // перестановка можлива, міняємо елементи місцями
@@ -191,12 +187,7 @@ class GamePlatformState extends Phaser.State {
         this.tint = 0xFFFFFF;
         // sound.play('');
     }
-    updateTimeCounter(timeText) {
-        rawSecondsCounter -= 1;
-        secondsCounter = rawSecondsCounter % 60;
-        minuteCounter = Math.floor(rawSecondsCounter / 60);
-        timeText.setText(`${minuteCounter}:${secondsCounter}`);
-    }
+
 }
 
 function removeDuplicates(donuts, donutTypes, row, column) {
@@ -269,6 +260,12 @@ function getRemovableDonuts(donuts, swapA, swapB) {
         }
     });
     return retValue;
+}
+
+function formatTime(sec) {
+    const s = String(sec % 60).padStart(2, '0');
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    return m + ':' + s;
 }
 
 export default GamePlatformState;
