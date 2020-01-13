@@ -4,7 +4,7 @@ const DONUT_SIZE = 100;
 const ALLOWED_DONUT_TYPES = ['donut-01', 'donut-02', 'donut-03', 'donut-04', 'donut-05', 'donut-06'];
 
 const LOSE_TIME = 330;
-let timeCounter;
+let rawSecondsCounter, secondsCounter, minuteCounter;
 
 
 let backgroundMusic;
@@ -89,8 +89,10 @@ class GamePlatformState extends Phaser.State {
             backgroundMusic.destroy();
             this.cache.removeSound('soundTrack');
         }, this);
-        timeCounter = LOSE_TIME;
-        const timeText = this.add.text(centerX + 100, 100, `00:${timeCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
+        rawSecondsCounter = LOSE_TIME;
+        secondsCounter = rawSecondsCounter % 60;
+        minuteCounter = Math.floor(rawSecondsCounter / 60);
+        const timeText = this.add.text(centerX + 100, 100, `${minuteCounter}:${secondsCounter}`, { font: "64px Fredoka One", fill: "#ff3030", align: "center" });
         this.game.time.events.loop(Phaser.Timer.SECOND, () => { this.updateTimeCounter(timeText) }, this);
 
     }
@@ -187,8 +189,10 @@ class GamePlatformState extends Phaser.State {
         // sound.play('');
     }
     updateTimeCounter(timeText) {
-        timeCounter--;
-        timeText.setText(`00:${timeCounter}`)
+        rawSecondsCounter -= 1;
+        secondsCounter = rawSecondsCounter % 60;
+        minuteCounter = Math.floor(rawSecondsCounter / 60);
+        timeText.setText(`${minuteCounter}:${secondsCounter}`);
     }
 }
 
