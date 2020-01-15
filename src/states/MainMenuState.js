@@ -12,6 +12,9 @@ class MainMenuState extends Phaser.State {
 	}
 	create() {
 		const { centerX, centerY } = this.world;
+
+		sessionStorage.setItem('curState', 'MainMenuState');
+
 		this.stage.backgroundColor = '#fffcad';
 		let backgroundImage = this.add.sprite(0, 0, 'background');
 		backgroundImage.height = 1100;
