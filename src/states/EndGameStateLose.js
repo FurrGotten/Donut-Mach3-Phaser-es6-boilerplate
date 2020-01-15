@@ -9,6 +9,9 @@ class EndGameStateLose extends Phaser.State {
 	}
 	create() {
 		const { centerX, centerY } = this.world;
+
+		sessionStorage.setItem('curState', 'EndGameStateLose');
+
         this.stage.backgroundColor = '#bbb980';
 		let backgroundImage = this.add.sprite(0, 0, 'background');
 		backgroundImage.height = 1100;
@@ -21,6 +24,10 @@ class EndGameStateLose extends Phaser.State {
 		playButton.anchor.setTo(0.5, 0.5);
 		playButton.onInputDown.add(this.tint, playButton);
 		playButton.onInputUp.add(this.unTint, playButton);
+		const backToMenu = this.add.text(centerX, 1000, 'back to main menu', { font: "80px Fredoka One", fill: "#FFFFFF", align: "center" });
+		backToMenu.anchor.setTo(0.5);
+		backToMenu.inputEnabled = true;
+		backToMenu.events.onInputUp.add(() => {this.state.start('MainMenuState')}, this);
 	}
 	tint() {
 		this.tint = 0xbbbbbb;

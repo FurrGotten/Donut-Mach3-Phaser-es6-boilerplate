@@ -18,9 +18,20 @@ class Game extends Phaser.Game {
 		this.state.add('EndGameStateWin', EndGameStateWin, false);
 		this.state.add('EndGameStateLose', EndGameStateLose, false);
 		this.state.add('TutorialState', TutorialState, false);
-		this.state.start('MainMenuState');
+		if (sessionStorage.getItem('curState') === 'MainMenuState'){
+			this.state.start('MainMenuState');
+		} else if (sessionStorage.getItem('curState') === 'GamePlatformState'){
+			this.state.start('GamePlatformState');
+		} else if (sessionStorage.getItem('curState') === 'EndGameStateWin'){
+			this.state.start('EndGameStateWin');
+		} else if (sessionStorage.getItem('curState') === 'EndGameStateLose'){
+			this.state.start('EndGameStateLose');
+		} else if (sessionStorage.getItem('curState') === 'TutorialState'){
+			this.state.start('TutorialState');
+		} else {
+			this.state.start('MainMenuState');
+		}
 	}
-
 }
 
 new Game();
